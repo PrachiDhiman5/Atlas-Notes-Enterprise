@@ -17,24 +17,75 @@ const defaultDevOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:5174",
-  "http://127.0.0.1:5174"
+  "http://127.0.0.1:5174",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173"
 ];
 
-const parseCorsOrigins = () => {
-  const raw = process.env.CLIENT_URL || "http://localhost:5173";
-  const fromEnv = raw
+const defaultPrimaryClientUrl = "http://localhost:5173";
+
+/** Strip repeated outer single/double quotes from pasted env values. */
+const stripOuterQuotes = (value) => {
+  let t = String(value).trim();
+  while (t.length >= 2) {
+    const dq = t.startsWith('"') && t.endsWith('"');
+    const sq = t.startsWith("'") && t.endsWith("'");
+    if (!dq && !sq) break;
+    t = t.slice(1, -1).trim();
+  }
+  return t;
+};
+
+/**
+ * Normalize for CORS `Origin` matching. With `credentials: true`, browsers reject `*`;
+ * we never emit it from env (treat as absent).
+ */
+const normalizeCorsOrigin = (value) => {
+  const collapsed = stripOuterQuotes(String(value).replace(/\r?\n/g, "")).trim();
+  if (!collapsed || collapsed === "*") return null;
+  const noTrailingSlash = collapsed.replace(/\/+$/, "");
+  if (!noTrailingSlash || noTrailingSlash === "*") return null;
+  return noTrailingSlash;
+};
+
+/** Split CLIENT_URL on commas / newlines; empty segments and lone commas are dropped. */
+const splitClientUrlRaw = (raw) => {
+  if (raw == null) return [];
+  return String(raw)
+    .replace(/\r?\n/g, ",")
     .split(",")
-    .map((s) => s.trim())
+    .map((segment) => stripOuterQuotes(segment).trim())
     .filter(Boolean);
-  return [...new Set([...fromEnv, ...defaultDevOrigins])];
+};
+
+/**
+ * Origins parsed only from CLIENT_URL (no dev merge). Used for primary client URL (emails, etc.).
+ * Production: add your Vercel HTTPS origin here; if unset, `clientUrl` falls back to localhost.
+ */
+const parseExplicitClientOrigins = () => {
+  const raw = process.env.CLIENT_URL;
+  if (raw == null || !String(raw).trim()) return [];
+  return splitClientUrlRaw(raw).map(normalizeCorsOrigin).filter(Boolean);
+};
+
+const explicitClientOrigins = parseExplicitClientOrigins();
+
+/**
+ * CORS + Socket.IO: explicit CLIENT_URL origins plus fixed dev hosts (Vite).
+ * If CLIENT_URL is missing/empty in production, only the dev defaults apply — browsers on Vercel
+ * will be blocked until CLIENT_URL includes the deployed app origin.
+ */
+const parseCorsOrigins = () => {
+  const dev = defaultDevOrigins.map(normalizeCorsOrigin).filter(Boolean);
+  return [...new Set([...explicitClientOrigins, ...dev])];
 };
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: Number(process.env.PORT || 5000),
   mongoUri: process.env.MONGO_URI || "",
-  /** First entry is primary (e.g. emails); full list used for CORS + Socket.IO */
-  clientUrl: (process.env.CLIENT_URL || "http://localhost:5173").split(",")[0].trim(),
+  /** First valid explicit CLIENT_URL origin, else localhost (emails / redirects). */
+  clientUrl: explicitClientOrigins[0] || defaultPrimaryClientUrl,
   corsOrigins: parseCorsOrigins(),
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET || "access-secret",
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || "refresh-secret",

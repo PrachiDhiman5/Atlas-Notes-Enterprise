@@ -2,11 +2,19 @@ import axios from "axios";
 
 let accessToken = null;
 
+const missingProdApiUrl =
+  "Production build requires VITE_API_URL (full API base, e.g. https://your-api.onrender.com/api/v1). Set it in client/.env.production or your host’s env before building.";
+
 export function getApiBaseUrl() {
-  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  const fromEnv = String(import.meta.env.VITE_API_URL ?? "").trim();
+  if (fromEnv) return fromEnv;
   // Dev: Vite proxies /api → backend (see vite.config.js). Same origin = no CORS issues.
   if (import.meta.env.DEV) return "/api/v1";
-  return "http://localhost:5000/api/v1";
+  if (import.meta.env.PROD) {
+    console.error(missingProdApiUrl);
+    throw new Error(missingProdApiUrl);
+  }
+  return "/api/v1";
 }
 
 function isDevProxy() {

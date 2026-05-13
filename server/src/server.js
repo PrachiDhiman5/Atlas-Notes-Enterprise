@@ -16,9 +16,9 @@ const bootstrap = async () => {
 
   initializeSocket(io);
 
-  server.listen(env.port, () => {
+  server.listen(env.port, "0.0.0.0", () => {
     // eslint-disable-next-line no-console
-    console.log(`Server running on http://localhost:${env.port}`);
+    console.log(`Server listening on 0.0.0.0:${env.port}`);
     verifySmtpAtStartup().catch(() => {});
   });
 };
