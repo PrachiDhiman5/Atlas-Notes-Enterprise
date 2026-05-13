@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { api } from "../services/api.js";
+import { api, getApiErrorMessage } from "../services/api.js";
 import PageHeader from "../components/PageHeader.jsx";
 import { Activity, ChevronRight, FileText } from "lucide-react";
 
@@ -10,12 +11,14 @@ const fetchActivity = async () => {
 };
 
 export default function AlertsPage() {
-  const { data = [], isLoading } = useQuery({
+  const sessionReady = useSelector((s) => Boolean(s.auth.user && s.auth.accessToken));
+  const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ["analytics-activity"],
-    queryFn: fetchActivity
+    queryFn: fetchActivity,
+    enabled: sessionReady
   });
 
-  if (isLoading) {
+  if (!sessionReady || isLoading) {
     return (
       <section>
         <PageHeader title="Alerts" description="Updates in workspaces you belong to—who changed what and when." />
@@ -23,6 +26,18 @@ export default function AlertsPage() {
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
           ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section>
+        <PageHeader title="Alerts" description="Updates in workspaces you belong to—who changed what and when." />
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
+          <p className="font-medium">Could not load alerts.</p>
+          <p className="mt-1 text-rose-700/90 dark:text-rose-200/80">{getApiErrorMessage(error, "Try again in a moment.")}</p>
         </div>
       </section>
     );

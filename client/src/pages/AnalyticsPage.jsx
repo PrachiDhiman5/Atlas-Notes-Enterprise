@@ -1,14 +1,26 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "../services/api.js";
+import { useSelector } from "react-redux";
+import { api, getApiErrorMessage } from "../services/api.js";
 import { Activity, BarChart3, Bell, FileText, FolderKanban, HardDrive } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 
 export default function AnalyticsPage() {
-  const { data, isLoading } = useQuery({
+  const sessionReady = useSelector((s) => Boolean(s.auth.user && s.auth.accessToken));
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["analytics-overview"],
-    queryFn: async () => (await api.get("/analytics/overview")).data.data
+    queryFn: async () => (await api.get("/analytics/overview")).data.data,
+    enabled: sessionReady
   });
+
+  if (!sessionReady) {
+    return (
+      <section>
+        <PageHeader title="Analytics" description="Organization-wide usage and storage at a glance." />
+        <div className="h-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+      </section>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -18,6 +30,20 @@ export default function AnalyticsPage() {
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
           ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section>
+        <PageHeader title="Analytics" description="Organization-wide usage and storage at a glance." />
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
+          <p className="font-medium">Could not load analytics.</p>
+          <p className="mt-1 text-rose-700/90 dark:text-rose-200/80">
+            {getApiErrorMessage(error, "Check that the API includes GET /analytics/overview under /api/v1 and that you are signed in.")}
+          </p>
         </div>
       </section>
     );

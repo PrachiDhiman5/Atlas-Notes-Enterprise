@@ -3,7 +3,7 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Layout from "./components/Layout.jsx";
 import { PageSkeleton } from "./components/Skeleton.jsx";
-import { setApiAccessToken } from "./services/api.js";
+import { setApiAccessToken, setApiRefreshToken } from "./services/api.js";
 
 const LandingPage = lazy(() => import("./pages/LandingPage.jsx"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx"));
@@ -35,18 +35,22 @@ function AdminRoute() {
 
 export default function App() {
   const accessToken = useSelector((state) => state.auth.accessToken);
+  const refreshToken = useSelector((state) => state.auth.refreshToken);
   const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
-    setApiAccessToken(accessToken);
-  }, [accessToken]);
+    setApiAccessToken(accessToken ?? null);
+    setApiRefreshToken(refreshToken ?? null);
+  }, [accessToken, refreshToken]);
 
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-100 p-8 dark:bg-slate-950">
-          <div className="mx-auto max-w-6xl rounded-2xl border border-slate-200/80 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
-            <PageSkeleton />
+        <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-6 shadow-soft dark:border-slate-700/80 dark:bg-slate-900/50 sm:p-8">
+              <PageSkeleton />
+            </div>
           </div>
         </div>
       }

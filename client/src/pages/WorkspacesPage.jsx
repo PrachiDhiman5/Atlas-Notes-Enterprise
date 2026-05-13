@@ -1,10 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
 import { api, getApiErrorMessage } from "../services/api.js";
 import { Building2, Plus, UserPlus, X } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import { useState } from "react";
 
 export default function WorkspacesPage() {
+  const user = useSelector((s) => s.auth.user);
+  const accessToken = useSelector((s) => s.auth.accessToken);
+  const sessionReady = Boolean(user && accessToken);
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(null);
@@ -15,7 +19,8 @@ export default function WorkspacesPage() {
 
   const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ["workspaces"],
-    queryFn: async () => (await api.get("/workspaces")).data.data
+    queryFn: async () => (await api.get("/workspaces")).data.data,
+    enabled: sessionReady
   });
 
   const createWs = useMutation({
@@ -38,6 +43,28 @@ export default function WorkspacesPage() {
       setInviteRole("member");
     }
   });
+
+  if (!sessionReady) {
+    return (
+      <section>
+        <PageHeader
+          title="Workspaces"
+          description="Create a space → you become owner → invite teammates → assign roles. Matches the workspace management flow in the platform diagram."
+          actions={
+            <button type="button" disabled className="btn-primary inline-flex items-center gap-2 opacity-50">
+              <Plus className="h-4 w-4" />
+              Create workspace
+            </button>
+          }
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section>

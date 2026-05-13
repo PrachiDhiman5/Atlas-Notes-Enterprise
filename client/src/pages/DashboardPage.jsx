@@ -25,17 +25,21 @@ function stripHtml(html) {
 
 export default function DashboardPage() {
   const user = useSelector((state) => state.auth.user);
+  const accessToken = useSelector((state) => state.auth.accessToken);
+  const sessionReady = Boolean(user && accessToken);
 
   const { data: workspaces = [] } = useQuery({
     queryKey: ["workspaces"],
-    queryFn: async () => (await api.get("/workspaces")).data.data
+    queryFn: async () => (await api.get("/workspaces")).data.data,
+    enabled: sessionReady
   });
 
   const primaryWorkspaceId = workspaces[0]?._id;
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["analytics-overview"],
-    queryFn: async () => (await api.get("/analytics/overview")).data.data
+    queryFn: async () => (await api.get("/analytics/overview")).data.data,
+    enabled: sessionReady
   });
 
   const { data: recentNotes = [], isLoading: notesLoading } = useQuery({
@@ -44,12 +48,13 @@ export default function DashboardPage() {
       if (!primaryWorkspaceId) return [];
       return (await api.get("/notes", { params: { limit: 5, workspace: primaryWorkspaceId } })).data.data;
     },
-    enabled: Boolean(primaryWorkspaceId)
+    enabled: sessionReady && Boolean(primaryWorkspaceId)
   });
 
   const { data: publicNotes = [], isLoading: publicNotesLoading } = useQuery({
     queryKey: ["notes", "public-recent"],
-    queryFn: async () => (await api.get("/notes", { params: { limit: 5 } })).data.data
+    queryFn: async () => (await api.get("/notes", { params: { limit: 5 } })).data.data,
+    enabled: sessionReady
   });
 
   return (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { api, getApiErrorMessage, setApiAccessToken } from "../services/api.js";
+import { api, getApiErrorMessage, setApiAccessToken, setApiRefreshToken } from "../services/api.js";
 import { setSession } from "../redux/store.js";
 import AuthLayout from "../components/AuthLayout.jsx";
 
@@ -17,9 +17,10 @@ export default function LoginPage() {
     setMessage("");
     try {
       const res = await api.post("/auth/login", { email, password });
-      const { user, accessToken } = res.data.data;
-      dispatch(setSession({ user, accessToken }));
+      const { user, accessToken, refreshToken } = res.data.data;
+      dispatch(setSession({ user, accessToken, refreshToken }));
       setApiAccessToken(accessToken);
+      setApiRefreshToken(refreshToken);
       navigate("/dashboard");
     } catch (error) {
       setMessage(getApiErrorMessage(error, "Login failed"));

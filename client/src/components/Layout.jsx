@@ -77,21 +77,23 @@ export default function Layout() {
   });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
+  const accessToken = useSelector((state) => state.auth.accessToken);
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     localStorage.setItem("theme", dark ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !accessToken) return;
     queryClient.prefetchQuery({
       queryKey: ["workspaces"],
       queryFn: fetchWorkspaces
     });
-  }, [user, queryClient]);
+  }, [user, accessToken, queryClient]);
 
   useEffect(() => {
     if (!user) return;
@@ -196,7 +198,7 @@ export default function Layout() {
   );
 
   return (
-    <div className={dark ? "dark" : ""}>
+    <div>
       <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
         <div className="lg:flex">
           <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 lg:hidden">
