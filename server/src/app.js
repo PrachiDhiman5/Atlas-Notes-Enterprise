@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -8,6 +11,21 @@ import rateLimit from "express-rate-limit";
 import routes from "./routes/index.js";
 import { env } from "./config/env.js";
 import { errorHandler, notFound } from "./middleware/error.middleware.js";
+
+const { version: pkgVersion } = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"),
+    "utf8"
+  )
+);
+
+const rootJson = {
+  success: true,
+  message: "Enterprise Notes API",
+  version: pkgVersion,
+  health: "/api/v1/health",
+  api: "/api/v1"
+};
 
 export const app = express();
 
@@ -28,6 +46,13 @@ app.use(
     max: 300
   })
 );
+
+app.get("/", (req, res) => {
+  res.status(200).json(rootJson);
+});
+app.head("/", (req, res) => {
+  res.status(200).json(rootJson);
+});
 
 app.use("/api/v1", routes);
 app.use(notFound);
