@@ -1,16 +1,23 @@
 {
-  "name": "project7_notes_api",
+  "name": "enterprise-collab-notes-platform",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Production-grade collaborative notes and knowledge management platform (MERN).",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^5.2.1",
-    "mongoose": "^9.1.6"
+  "scripts": {
+    "dev": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "dev:server": "npm run dev -w server",
+    "dev:all": "concurrently -n api,web -c blue,magenta \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npm run build -w client && npm run build -w server",
+    "start": "npm run start -w server",
+    "lint": "npm run lint -w client && npm run lint -w server",
+    "format": "npm run format -w server"
   }
 }

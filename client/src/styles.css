@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --surface: 255 255 255;
+    --surface-muted: 248 250 252;
+  }
+
+  .dark {
+    --surface: 15 23 42;
+    --surface-muted: 30 41 59;
+  }
+
+  body {
+    @apply font-sans antialiased bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-indigo-500/25 transition hover:from-indigo-500 hover:to-violet-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+  }
+
+  .card-surface {
+    @apply rounded-xl border border-slate-200/80 bg-white shadow-soft dark:border-slate-700/80 dark:bg-slate-900/50 dark:shadow-none;
+  }
+
+  /* TipTap editor */
+  .tiptap-editor .ProseMirror {
+    @apply min-h-[min(18rem,50vh)] max-w-none px-1 py-2 text-sm leading-relaxed text-slate-800 outline-none dark:text-slate-200;
+  }
+
+  .tiptap-editor .ProseMirror p {
+    @apply mb-3 last:mb-0;
+  }
+
+  .tiptap-editor .ProseMirror h1 {
+    @apply mb-3 text-2xl font-semibold text-slate-900 dark:text-white;
+  }
+
+  .tiptap-editor .ProseMirror h2 {
+    @apply mb-2 text-xl font-semibold text-slate-900 dark:text-white;
+  }
+
+  .tiptap-editor .ProseMirror ul {
+    @apply mb-3 list-disc pl-6;
+  }
+
+  .tiptap-editor .ProseMirror ol {
+    @apply mb-3 list-decimal pl-6;
+  }
+
+  .tiptap-editor .ProseMirror code {
+    @apply rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-indigo-700 dark:bg-slate-800 dark:text-indigo-300;
+  }
+
+  .tiptap-editor .ProseMirror blockquote {
+    @apply border-l-4 border-indigo-300 pl-4 italic text-slate-600 dark:border-indigo-600 dark:text-slate-400;
+  }
+}

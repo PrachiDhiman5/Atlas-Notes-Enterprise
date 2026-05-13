@@ -1,0 +1,13 @@
+# Normalize line endings on checkout (cross-platform teams)
+* text=auto eol=lf
+
+# Treat these as binary (no conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

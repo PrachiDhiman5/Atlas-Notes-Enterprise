@@ -1,0 +1,26 @@
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: collab_notes_server
+    env_file:
+      - ./server/.env
+    ports:
+      - "5001:5000"
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        # Browser on your machine calls the API at host:5000 (not "server" hostname)
+        VITE_API_URL: http://localhost:5001/api/v1
+        VITE_SOCKET_URL: http://localhost:5001
+    container_name: collab_notes_client
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+
