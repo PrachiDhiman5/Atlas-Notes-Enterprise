@@ -1,6 +1,8 @@
 import { NavLink, Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "../services/api.js";
 import {
   Activity,
   BarChart3,
@@ -60,7 +62,12 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
   );
 }
 
+async function fetchWorkspaces() {
+  return (await api.get("/workspaces")).data.data;
+}
+
 export default function Layout() {
+  const queryClient = useQueryClient();
   const [dark, setDark] = useState(() => {
     if (typeof window === "undefined") return true;
     const t = localStorage.getItem("theme");
@@ -77,6 +84,14 @@ export default function Layout() {
   useEffect(() => {
     localStorage.setItem("theme", dark ? "dark" : "light");
   }, [dark]);
+
+  useEffect(() => {
+    if (!user) return;
+    queryClient.prefetchQuery({
+      queryKey: ["workspaces"],
+      queryFn: fetchWorkspaces
+    });
+  }, [user, queryClient]);
 
   useEffect(() => {
     if (!user) return;

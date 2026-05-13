@@ -67,6 +67,7 @@ export default function App() {
             <Route path="workspaces" element={<WorkspacesPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="inbox" element={<Navigate to="/notifications" replace />} />
             <Route path="alerts" element={<AlertsPage />} />
             <Route element={<AdminRoute />}>
               <Route path="admin" element={<AdminPage />} />

@@ -5,9 +5,30 @@ let accessToken = null;
 const missingProdApiUrl =
   "Production build requires VITE_API_URL (full API base, e.g. https://your-api.onrender.com/api/v1). Set it in client/.env.production or your host’s env before building.";
 
+/**
+ * When VITE_API_URL is set to an origin only (or /api without v1), requests like GET /workspaces
+ * miss the Express mount at /api/v1 and return 404 ("Route not found: /workspaces").
+ */
+function normalizeViteApiBase(raw) {
+  let s = String(raw).trim().replace(/\/+$/, "");
+  if (!s) return s;
+  if (s.endsWith("/api/v1")) return s;
+  if (s.endsWith("/api")) return `${s}/v1`;
+  try {
+    const u = new URL(s);
+    const p = (u.pathname || "").replace(/\/+$/, "") || "";
+    if (p === "" || p === "/") return `${u.origin}/api/v1`;
+    if (p === "/api") return `${u.origin}/api/v1`;
+    if (!p.includes("/api/v1")) return `${u.origin}/api/v1`;
+  } catch {
+    /* relative or invalid URL — leave for axios; dev proxy uses "/api/v1" */
+  }
+  return s;
+}
+
 export function getApiBaseUrl() {
   const fromEnv = String(import.meta.env.VITE_API_URL ?? "").trim();
-  if (fromEnv) return fromEnv;
+  if (fromEnv) return normalizeViteApiBase(fromEnv);
   // Dev: Vite proxies /api → backend (see vite.config.js). Same origin = no CORS issues.
   if (import.meta.env.DEV) return "/api/v1";
   if (import.meta.env.PROD) {

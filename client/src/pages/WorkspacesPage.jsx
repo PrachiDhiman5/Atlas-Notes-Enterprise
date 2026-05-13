@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../services/api.js";
+import { api, getApiErrorMessage } from "../services/api.js";
 import { Building2, Plus, UserPlus, X } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import { useState } from "react";
@@ -13,7 +13,7 @@ export default function WorkspacesPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
 
-  const { data = [], isLoading, isError } = useQuery({
+  const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => (await api.get("/workspaces")).data.data
   });
@@ -121,7 +121,8 @@ export default function WorkspacesPage() {
 
       {isError ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
-          Unable to load workspaces.
+          <p className="font-medium">Unable to load workspaces.</p>
+          <p className="mt-1 text-rose-700/90 dark:text-rose-200/80">{getApiErrorMessage(error, "Check the API URL (VITE_API_URL must end with /api/v1) and that you are signed in.")}</p>
         </div>
       ) : null}
 
